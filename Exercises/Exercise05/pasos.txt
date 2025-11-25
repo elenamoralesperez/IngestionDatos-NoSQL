@@ -1,0 +1,51 @@
+Pipeline ETL de GDELT en NiFi
+
+1.Obtener la Lista de Archivos (InvokeHTTP)
+Lo primero que necesito es saber qué archivos nuevos hay. Para esto, voy a descargar el archivo índice "Last Update".
+Arrastro un procesador InvokeHTTP al lienzo.
+En Properties, configuro:
+HTTP Method: GET
+Remote URL: http://data.gdeltproject.org/gdeltv2/lastupdate.txt
+En Scheduling, cambio el Run Schedule a 15 min (para no sobrecargar la red, ya que GDELT solo actualiza en ese intervalo).
+Conecto la relación Response al siguiente paso y termino las demás (Failure, etc.).
+
+
+2. Dividir el Índice (SplitText)
+El archivo que acabo de descargar tiene 3 líneas (Export, Mentions, GKG). Necesito procesar cada una por separado.
+Agrego un procesador SplitText.
+Lo conecto a la salida del anterior.
+En Properties:
+Line Split Count: 1 (esto hará que cada línea se convierta en un FlowFile independiente).
+
+
+3. Extraer la URL de Descarga (ExtractText)
+Ahora tengo una línea de texto que contiene metadatos y la URL del zip. Necesito "capturar" solo la URL para usarla después.
+Agrego un procesador ExtractText.
+En Properties, añado una propiedad nueva (dando al botón +):
+Nombre: gdelt.download.url
+Valor (Regex): (http.*zip)
+Nota mental: Esto buscará cualquier texto que empiece por http y termine en zip y lo guardará en un atributo llamado gdelt.download.url.
+
+
+4. Descargar el Archivo de Datos (InvokeHTTP)
+Ya tengo la dirección exacta. Ahora voy a descargar el archivo pesado.
+Agrego otro InvokeHTTP.
+En Properties:
+HTTP Method: GET
+Remote URL: ${gdelt.download.url}
+Aquí estoy usando Lenguaje de Expresión (${...}) para decirle a NiFi: "Usa la dirección que extraje en el paso anterior".
+
+
+5. Descomprimir los Datos (UnpackContent)
+El archivo descargado es un .zip. No puedo leerlo así, necesito abrirlo.
+Agrego un procesador UnpackContent.
+En Properties:
+Packaging Format: zip
+
+
+6. Guardar en mi Disco (PutFile)
+Finalmente, quiero persistir estos datos en mi máquina local para analizarlos luego.
+Agrego el procesador PutFile.
+En Properties, configuro la ruta crítica basada en mi Docker Compose:
+Directory: /tmp/data
+Conflict Resolution Strategy: replace (o ignore).
