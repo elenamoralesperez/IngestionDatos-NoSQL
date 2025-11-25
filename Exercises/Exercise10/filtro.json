@@ -1,0 +1,22 @@
+{
+  "name": "inventory-connector-mysql-filtered",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "nififlow-mysql-1",
+    "database.port": "3306",
+    "database.user": "mysqluser",
+    "database.password": "mysqlpw",
+    "database.server.id": "184054",
+    "topic.prefix": "dbserver1",
+    "database.include.list": "inventory",
+    "schema.history.internal.kafka.bootstrap.servers": "nififlow-kafka-1:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.inventory",
+    
+    "_comentario": "--- AQUÍ ESTÁ EL FILTRO SMT ---",
+    "transforms": "filter",
+    "transforms.filter.type": "io.debezium.transforms.Filter",
+    "transforms.filter.language": "jsr223.groovy",
+    "transforms.filter.condition": "value.after.id > 2"
+  }
+}

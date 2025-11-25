@@ -1,0 +1,20 @@
+{
+  "name": "connector-reseteado-final",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "mysqluser",
+    "database.password": "mysqlpw",
+    "database.server.id": "99999",
+    "topic.prefix": "dbserver_nuevo",
+    "database.include.list": "inventory",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.inventory_nuevo",
+    
+    "transforms": "censura",
+    "transforms.censura.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.censura.exclude": "email"
+  }
+}
