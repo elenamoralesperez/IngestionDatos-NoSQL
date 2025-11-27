@@ -23,17 +23,26 @@ Load the data from the `listingsAndReviews.json` file into the `airbnb` database
 In this exercise, you will work with the `listingsAndReviews` collection in the `airbnb` database. The goal is to find the first document with the country "Brazil". 
 
 The goal is to build the aggregation pipeline to query the following requirements:
-- Match documents where the address.country is "Brazil".
-- Project only the name, address.country, and address.city fields.
-db.listingsAndReviews.find({}, {_id:0, name:1, "address.city":1, "addres.country": 1});
-- Sort the documents in ascending order by the name field.
- db.listingsAndReviews.find({}).sort({name:1});
-- Limit the result to the first document.
-db.listingsAndReviews.find({_id:0, name:1, "address.city":1, "addres.country": 1}.sort({name:1}).limit(1)); 
+Match documents where the address.country is "Brazil".
+- db.listingsAndReviews.find({ "address.country": "Brazil" });
+- let query = { "address.country": "Brazil" };
+
+Project only the name, address.country, and address.city fields.
+- db.listingsAndReviews.find({}, {_id:0, name:1, "address.city":1, "addres.country": 1});
+- let projection = { _id: 0, name: 1, "address.country": 1, "address.market" : 1 };
+
+Sort the documents in ascending order by the name field.
+- db.listingsAndReviews.find({}).sort({name:1});
+- let sort = { name: 1 };
+
+Limit the result to the first document.
+- db.listingsAndReviews.find({_id:0, name:1, "address.city":1, "addres.country": 1}.sort({name:1}).limit(1)); 
+- let limit = 1;
 
 There are different ways to achieve this:
 1. Use the find method with projection and sort.
 2. Use the aggregation framework with the `$match`, `$project`, `$sort`, and `$limit` stages. 
+db.listingsAndReviews.aggregate([ {$match: query}, {$project: projection}, {$sort: sort}, {$limit: limit} ]);
 
 ## Extra Exercise: Max property price
 
